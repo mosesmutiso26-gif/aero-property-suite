@@ -68,6 +68,7 @@ export default {
           "taskbar-foreground": "hsl(var(--aero-taskbar-foreground))",
           success: "hsl(var(--aero-success))",
           warning: "hsl(var(--aero-warning))",
+          highlight: "hsl(var(--aero-highlight))",
         },
       },
       borderRadius: {

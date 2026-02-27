@@ -1,7 +1,22 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Building2, Users, CreditCard, Wrench, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import {
+  Building2, Users, CreditCard, Wrench, TrendingUp, AlertTriangle,
+  FileText, BarChart3, Settings, FolderClosed, ClipboardList, BellRing
+} from 'lucide-react';
+
+const folderModules = [
+  { label: 'Properties', path: '/dashboard/properties', icon: Building2, color: 'text-primary', description: 'Manage buildings' },
+  { label: 'Units', path: '/dashboard/units', icon: ClipboardList, color: 'text-accent', description: 'Rooms & apartments' },
+  { label: 'Tenants', path: '/dashboard/tenants', icon: Users, color: 'text-aero-success', description: 'Resident records' },
+  { label: 'Invoices', path: '/dashboard/invoices', icon: FileText, color: 'text-aero-warning', description: 'Billing documents' },
+  { label: 'Payments', path: '/dashboard/payments', icon: CreditCard, color: 'text-primary', description: 'Payment records' },
+  { label: 'Maintenance', path: '/dashboard/maintenance', icon: Wrench, color: 'text-destructive', description: 'Repair requests' },
+  { label: 'Reports', path: '/dashboard/reports', icon: BarChart3, color: 'text-accent', description: 'Analytics & data' },
+  { label: 'Settings', path: '/dashboard/settings', icon: Settings, color: 'text-muted-foreground', description: 'System config' },
+];
 
 const Overview = () => {
   const { role } = useAuth();
@@ -38,83 +53,67 @@ const Overview = () => {
     },
   });
 
-  if (isLoading) {
-    return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="stat-card animate-pulse">
-            <div className="h-4 w-24 bg-muted rounded mb-3" />
-            <div className="h-8 w-16 bg-muted rounded" />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   const statCards = [
-    {
-      label: 'Properties',
-      value: stats?.totalProperties || 0,
-      icon: <Building2 className="h-5 w-5" />,
-      color: 'text-primary',
-    },
-    {
-      label: 'Occupancy Rate',
-      value: `${stats?.occupancyRate || 0}%`,
-      subtitle: `${stats?.occupiedUnits}/${stats?.totalUnits} units`,
-      icon: <TrendingUp className="h-5 w-5" />,
-      color: 'text-aero-success',
-    },
-    {
-      label: 'Active Tenants',
-      value: stats?.activeTenants || 0,
-      icon: <Users className="h-5 w-5" />,
-      color: 'text-accent',
-    },
-    {
-      label: 'Total Revenue',
-      value: `KES ${(stats?.totalRevenue || 0).toLocaleString()}`,
-      icon: <CreditCard className="h-5 w-5" />,
-      color: 'text-aero-success',
-    },
-    {
-      label: 'Pending Maintenance',
-      value: stats?.pendingMaintenance || 0,
-      icon: <Wrench className="h-5 w-5" />,
-      color: 'text-aero-warning',
-    },
-    {
-      label: 'Overdue Invoices',
-      value: stats?.overdueInvoices || 0,
-      icon: <AlertTriangle className="h-5 w-5" />,
-      color: 'text-destructive',
-    },
+    { label: 'Properties', value: stats?.totalProperties || 0, icon: Building2, color: 'text-primary' },
+    { label: 'Occupancy', value: `${stats?.occupancyRate || 0}%`, sub: `${stats?.occupiedUnits || 0}/${stats?.totalUnits || 0}`, icon: TrendingUp, color: 'text-aero-success' },
+    { label: 'Tenants', value: stats?.activeTenants || 0, icon: Users, color: 'text-accent' },
+    { label: 'Revenue', value: `KES ${(stats?.totalRevenue || 0).toLocaleString()}`, icon: CreditCard, color: 'text-aero-success' },
+    { label: 'Pending Repairs', value: stats?.pendingMaintenance || 0, icon: Wrench, color: 'text-aero-warning' },
+    { label: 'Overdue', value: stats?.overdueInvoices || 0, icon: AlertTriangle, color: 'text-destructive' },
   ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard Overview</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Welcome to Aero Property Suite
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Stats row */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         {statCards.map((card) => (
-          <div key={card.label} className="stat-card">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <div key={card.label} className="stat-card p-3">
+            <div className="flex items-center gap-2 mb-1.5">
+              <card.icon className={`h-4 w-4 ${card.color}`} />
+              <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground truncate">
                 {card.label}
               </span>
-              <span className={card.color}>{card.icon}</span>
             </div>
-            <p className="text-2xl font-bold text-foreground">{card.value}</p>
-            {card.subtitle && (
-              <p className="text-xs text-muted-foreground mt-1">{card.subtitle}</p>
+            <p className="text-lg font-bold text-foreground leading-tight">
+              {isLoading ? '…' : card.value}
+            </p>
+            {card.sub && !isLoading && (
+              <p className="text-[10px] text-muted-foreground mt-0.5">{card.sub} units</p>
             )}
           </div>
         ))}
+      </div>
+
+      {/* Folder-style module grid */}
+      <div>
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <FolderClosed className="h-4 w-4 text-primary/70" />
+          <h2 className="text-sm font-semibold text-foreground">System Modules</h2>
+          <span className="text-[11px] text-muted-foreground ml-auto">{folderModules.length} items</span>
+        </div>
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+          {folderModules.map((mod) => (
+            <Link
+              key={mod.path}
+              to={mod.path}
+              className="aero-folder group"
+            >
+              <div className="p-4 flex flex-col items-center text-center gap-2">
+                <div className="relative">
+                  <div className="h-12 w-14 rounded bg-gradient-to-b from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center group-hover:from-primary/20 group-hover:to-primary/10 transition-colors">
+                    <mod.icon className={`h-6 w-6 ${mod.color} group-hover:scale-110 transition-transform`} />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[12px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">
+                    {mod.label}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{mod.description}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

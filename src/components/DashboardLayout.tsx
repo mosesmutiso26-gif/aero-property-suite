@@ -4,7 +4,7 @@ import { Navigate, useLocation, Link } from 'react-router-dom';
 import {
   Building2, Home, Users, Wrench, FileText, CreditCard,
   Bell, Settings, LogOut, Menu, X, ChevronRight, BarChart3,
-  ClipboardList, Shield
+  ClipboardList, Shield, FolderOpen, Minus, Square, ChevronDown
 } from 'lucide-react';
 
 interface NavItem {
@@ -67,6 +67,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   if (!user) return <Navigate to="/auth" replace />;
 
   const navItems = role ? roleNavItems[role] || [] : [];
+  const currentPage = navItems.find(i => i.path === location.pathname);
 
   const roleBadge: Record<string, string> = {
     super_admin: 'Super Admin',
@@ -78,14 +79,14 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const SidebarContent = () => (
     <>
       {/* Logo / Brand */}
-      <div className="px-4 py-5 border-b border-sidebar-border">
+      <div className="px-4 py-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary shadow-md">
             <Shield className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           <div>
             <h1 className="text-sm font-bold text-sidebar-foreground leading-tight">Aero Property</h1>
-            <p className="text-xs text-sidebar-foreground/60">Musembis Property</p>
+            <p className="text-[10px] text-sidebar-foreground/50 tracking-wide">Musembis Property</p>
           </div>
         </div>
       </div>
@@ -100,8 +101,11 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </span>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      {/* Explorer-style Navigation Tree */}
+      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+        <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
+          Navigation
+        </p>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -109,25 +113,25 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
               key={item.path}
               to={item.path}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+              className={`flex items-center gap-2.5 px-3 py-[7px] rounded text-[13px] transition-all ${
                 isActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                  ? 'bg-sidebar-primary/20 text-sidebar-primary-foreground font-medium border border-sidebar-primary/30 shadow-sm'
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
               }`}
             >
-              {item.icon}
+              <FolderOpen className={`h-4 w-4 ${isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/50'}`} />
               {item.label}
-              {isActive && <ChevronRight className="h-3 w-3 ml-auto" />}
+              {isActive && <ChevronRight className="h-3 w-3 ml-auto opacity-60" />}
             </Link>
           );
         })}
       </nav>
 
       {/* Sign out */}
-      <div className="px-3 py-4 border-t border-sidebar-border">
+      <div className="px-3 py-3 border-t border-sidebar-border">
         <button
           onClick={signOut}
-          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive w-full transition-colors"
+          className="flex items-center gap-2.5 px-3 py-2 rounded text-[13px] text-sidebar-foreground/60 hover:bg-destructive/10 hover:text-destructive w-full transition-colors"
         >
           <LogOut className="h-4 w-4" />
           Sign Out
@@ -139,17 +143,17 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:w-60 lg:w-64 flex-col aero-glass-dark shrink-0">
+      <aside className="hidden md:flex md:w-56 lg:w-60 flex-col aero-glass-dark shrink-0">
         <SidebarContent />
       </aside>
 
       {/* Mobile Overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-foreground/30" onClick={() => setMobileOpen(false)} />
+          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <aside className="absolute left-0 top-0 bottom-0 w-64 flex flex-col aero-glass-dark animate-aero-slide-in">
             <div className="absolute right-3 top-3">
-              <button onClick={() => setMobileOpen(false)} className="text-sidebar-foreground/70">
+              <button onClick={() => setMobileOpen(false)} className="text-sidebar-foreground/70 hover:text-sidebar-foreground">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -158,29 +162,65 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </div>
       )}
 
-      {/* Main content */}
+      {/* Main content area */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top bar */}
-        <header className="aero-glass border-b border-border px-4 py-3 flex items-center gap-3 shrink-0">
+        {/* Windows 7 Title Bar */}
+        <div className="aero-title-bar px-3 py-1.5 flex items-center gap-2 shrink-0">
           <button
-            className="md:hidden aero-button rounded-md p-2"
+            className="md:hidden text-sidebar-foreground/80 hover:text-sidebar-foreground p-1"
             onClick={() => setMobileOpen(true)}
           >
-            <Menu className="h-4 w-4 text-foreground" />
+            <Menu className="h-4 w-4" />
           </button>
-          <h2 className="text-sm font-semibold text-foreground flex-1">
-            {navItems.find(i => i.path === location.pathname)?.label || 'Dashboard'}
-          </h2>
-          <button className="relative aero-button rounded-md p-2">
-            <Bell className="h-4 w-4 text-foreground" />
+          <Shield className="h-4 w-4 text-sidebar-foreground/70 hidden md:block" />
+          <span className="text-[12px] text-sidebar-foreground/80 font-medium flex-1 truncate">
+            Aero Property Suite — {currentPage?.label || 'Dashboard'}
+          </span>
+          {/* Window controls */}
+          <div className="hidden md:flex items-center gap-0.5">
+            <button className="win-control text-sidebar-foreground/60">
+              <Minus className="h-3 w-3" />
+            </button>
+            <button className="win-control text-sidebar-foreground/60">
+              <Square className="h-2.5 w-2.5" />
+            </button>
+            <button className="win-control win-control-close text-sidebar-foreground/60">
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
+
+        {/* Toolbar / Address Bar */}
+        <div className="aero-toolbar px-3 py-1.5 flex items-center gap-2 shrink-0">
+          {/* Breadcrumb address bar */}
+          <div className="aero-address-bar flex-1 rounded px-3 py-1 flex items-center gap-1.5 text-[12px] text-foreground">
+            <FolderOpen className="h-3.5 w-3.5 text-primary/70" />
+            <span className="text-muted-foreground">Dashboard</span>
+            {currentPage && currentPage.path !== '/dashboard' && (
+              <>
+                <ChevronRight className="h-3 w-3 text-muted-foreground/60" />
+                <span className="font-medium">{currentPage.label}</span>
+              </>
+            )}
+          </div>
+          <button className="relative aero-button rounded px-2 py-1 flex items-center gap-1 text-[11px]">
+            <Bell className="h-3.5 w-3.5 text-foreground/70" />
+            <span className="hidden sm:inline text-foreground/70">Alerts</span>
           </button>
-        </header>
+        </div>
 
         {/* Page content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div className="flex-1 overflow-y-auto p-3 md:p-5">
           <div className="animate-aero-fade-in">
             {children}
           </div>
+        </div>
+
+        {/* Status bar */}
+        <div className="bg-card/80 border-t border-border px-3 py-1 flex items-center text-[11px] text-muted-foreground shrink-0">
+          <span>{navItems.length} modules</span>
+          <span className="mx-2">|</span>
+          <span>{role ? roleBadge[role] : ''}</span>
         </div>
       </main>
     </div>

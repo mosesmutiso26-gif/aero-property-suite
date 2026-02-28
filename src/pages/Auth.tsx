@@ -52,7 +52,7 @@ const Auth = () => {
         <div className="aero-title-bar rounded-t-lg px-5 py-3 flex items-center gap-3">
           <Building2 className="h-5 w-5 text-sidebar-foreground" />
           <h1 className="text-sm font-semibold text-sidebar-foreground tracking-wide">
-            Aero Property Suite — Musembis Property
+            Musembi Property Management System
           </h1>
         </div>
 

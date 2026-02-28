@@ -85,8 +85,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
             <Shield className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-sidebar-foreground leading-tight">Aero Property</h1>
-            <p className="text-[10px] text-sidebar-foreground/50 tracking-wide">Musembis Property</p>
+            <h1 className="text-sm font-bold text-sidebar-foreground leading-tight">Musembi Property</h1>
+            <p className="text-[10px] text-sidebar-foreground/50 tracking-wide">Management System</p>
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
           </button>
           <Shield className="h-4 w-4 text-sidebar-foreground/70 hidden md:block" />
           <span className="text-[12px] text-sidebar-foreground/80 font-medium flex-1 truncate">
-            Aero Property Suite — {currentPage?.label || 'Dashboard'}
+            Musembi Property — {currentPage?.label || 'Dashboard'}
           </span>
           {/* Window controls */}
           <div className="hidden md:flex items-center gap-0.5">

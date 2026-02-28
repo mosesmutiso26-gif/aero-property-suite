@@ -1,0 +1,15 @@
+{
+  "name": "Musembi Property Management System",
+  "short_name": "Musembi Property",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#e2e8f0",
+  "theme_color": "#1e3a5f",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

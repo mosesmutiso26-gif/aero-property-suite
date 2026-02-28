@@ -19,6 +19,7 @@ import SettingsPage from "./pages/dashboard/SettingsPage";
 import MyUnit from "./pages/dashboard/MyUnit";
 import Profile from "./pages/dashboard/Profile";
 import NotFound from "./pages/NotFound";
+import InstallPrompt from "./components/InstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <InstallPrompt />
       <BrowserRouter>
         <AuthProvider>
           <Routes>

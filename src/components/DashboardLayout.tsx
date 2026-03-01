@@ -4,7 +4,8 @@ import { Navigate, useLocation, Link } from 'react-router-dom';
 import {
   Building2, Home, Users, Wrench, FileText, CreditCard,
   Bell, Settings, LogOut, Menu, X, ChevronRight, BarChart3,
-  ClipboardList, Shield, FolderOpen, Minus, Square, ChevronDown
+  ClipboardList, Shield, FolderOpen, Minus, Square, ChevronDown,
+  MessageSquare, Send
 } from 'lucide-react';
 
 interface NavItem {
@@ -20,9 +21,11 @@ const roleNavItems: Record<string, NavItem[]> = {
     { label: 'Units', path: '/dashboard/units', icon: <ClipboardList className="h-4 w-4" /> },
     { label: 'Users', path: '/dashboard/users', icon: <Users className="h-4 w-4" /> },
     { label: 'Tenants', path: '/dashboard/tenants', icon: <Users className="h-4 w-4" /> },
+    { label: 'Complaints', path: '/dashboard/complaints', icon: <MessageSquare className="h-4 w-4" /> },
     { label: 'Maintenance', path: '/dashboard/maintenance', icon: <Wrench className="h-4 w-4" /> },
     { label: 'Invoices', path: '/dashboard/invoices', icon: <FileText className="h-4 w-4" /> },
     { label: 'Payments', path: '/dashboard/payments', icon: <CreditCard className="h-4 w-4" /> },
+    { label: 'SMS Reminders', path: '/dashboard/sms', icon: <Send className="h-4 w-4" /> },
     { label: 'Reports', path: '/dashboard/reports', icon: <BarChart3 className="h-4 w-4" /> },
     { label: 'Settings', path: '/dashboard/settings', icon: <Settings className="h-4 w-4" /> },
   ],
@@ -30,18 +33,22 @@ const roleNavItems: Record<string, NavItem[]> = {
     { label: 'Overview', path: '/dashboard', icon: <Home className="h-4 w-4" /> },
     { label: 'Properties', path: '/dashboard/properties', icon: <Building2 className="h-4 w-4" /> },
     { label: 'Tenants', path: '/dashboard/tenants', icon: <Users className="h-4 w-4" /> },
+    { label: 'Complaints', path: '/dashboard/complaints', icon: <MessageSquare className="h-4 w-4" /> },
     { label: 'Reports', path: '/dashboard/reports', icon: <BarChart3 className="h-4 w-4" /> },
     { label: 'Maintenance', path: '/dashboard/maintenance', icon: <Wrench className="h-4 w-4" /> },
+    { label: 'SMS Reminders', path: '/dashboard/sms', icon: <Send className="h-4 w-4" /> },
   ],
   caretaker: [
     { label: 'Overview', path: '/dashboard', icon: <Home className="h-4 w-4" /> },
     { label: 'Properties', path: '/dashboard/properties', icon: <Building2 className="h-4 w-4" /> },
     { label: 'Tenants', path: '/dashboard/tenants', icon: <Users className="h-4 w-4" /> },
+    { label: 'Complaints', path: '/dashboard/complaints', icon: <MessageSquare className="h-4 w-4" /> },
     { label: 'Maintenance', path: '/dashboard/maintenance', icon: <Wrench className="h-4 w-4" /> },
   ],
   tenant: [
     { label: 'Overview', path: '/dashboard', icon: <Home className="h-4 w-4" /> },
     { label: 'My Unit', path: '/dashboard/my-unit', icon: <Building2 className="h-4 w-4" /> },
+    { label: 'Complaints', path: '/dashboard/complaints', icon: <MessageSquare className="h-4 w-4" /> },
     { label: 'Invoices', path: '/dashboard/invoices', icon: <FileText className="h-4 w-4" /> },
     { label: 'Payments', path: '/dashboard/payments', icon: <CreditCard className="h-4 w-4" /> },
     { label: 'Maintenance', path: '/dashboard/maintenance', icon: <Wrench className="h-4 w-4" /> },

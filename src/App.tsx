@@ -14,6 +14,8 @@ import Tenants from "./pages/dashboard/Tenants";
 import Maintenance from "./pages/dashboard/Maintenance";
 import Invoices from "./pages/dashboard/Invoices";
 import Payments from "./pages/dashboard/Payments";
+import Complaints from "./pages/dashboard/Complaints";
+import SMSBulk from "./pages/dashboard/SMSBulk";
 import Reports from "./pages/dashboard/Reports";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import MyUnit from "./pages/dashboard/MyUnit";
@@ -42,6 +44,8 @@ const App = () => (
             <Route path="/dashboard/maintenance" element={<DashboardLayout><Maintenance /></DashboardLayout>} />
             <Route path="/dashboard/invoices" element={<DashboardLayout><Invoices /></DashboardLayout>} />
             <Route path="/dashboard/payments" element={<DashboardLayout><Payments /></DashboardLayout>} />
+            <Route path="/dashboard/complaints" element={<DashboardLayout><Complaints /></DashboardLayout>} />
+            <Route path="/dashboard/sms" element={<DashboardLayout><SMSBulk /></DashboardLayout>} />
             <Route path="/dashboard/reports" element={<DashboardLayout><Reports /></DashboardLayout>} />
             <Route path="/dashboard/settings" element={<DashboardLayout><SettingsPage /></DashboardLayout>} />
             <Route path="/dashboard/my-unit" element={<DashboardLayout><MyUnit /></DashboardLayout>} />

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Building2, FileText, CreditCard, Wrench, Plus, X } from 'lucide-react';
+import { Building2, FileText, CreditCard, Wrench, Plus, X, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MyUnit = () => {
@@ -10,6 +10,8 @@ const MyUnit = () => {
   const qc = useQueryClient();
   const [showMaintForm, setShowMaintForm] = useState(false);
   const [maintForm, setMaintForm] = useState({ title: '', description: '', priority: 'medium' });
+  const [showComplaintForm, setShowComplaintForm] = useState(false);
+  const [complaintForm, setComplaintForm] = useState({ subject: '', description: '' });
 
   const { data: tenant, isLoading } = useQuery({
     queryKey: ['my-tenant', user?.id],
@@ -53,6 +55,15 @@ const MyUnit = () => {
     enabled: !!tenant?.id,
   });
 
+  const { data: myComplaints } = useQuery({
+    queryKey: ['my-complaints', tenant?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from('complaints').select('*').eq('tenant_id', tenant!.id).order('created_at', { ascending: false });
+      return data || [];
+    },
+    enabled: !!tenant?.id,
+  });
+
   const { data: notifications } = useQuery({
     queryKey: ['my-notifications', user?.id],
     queryFn: async () => {
@@ -80,6 +91,28 @@ const MyUnit = () => {
       toast.success('Maintenance request submitted');
       setShowMaintForm(false);
       setMaintForm({ title: '', description: '', priority: 'medium' });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const submitComplaint = useMutation({
+    mutationFn: async () => {
+      if (!tenant) throw new Error('No tenant record');
+      if (!tenant.unit_id || !tenant.property_id) throw new Error('Not assigned to a unit');
+      const { error } = await supabase.from('complaints').insert({
+        subject: complaintForm.subject,
+        description: complaintForm.description,
+        tenant_id: tenant.id,
+        unit_id: tenant.unit_id,
+        property_id: tenant.property_id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['my-complaints'] });
+      toast.success('Complaint submitted');
+      setShowComplaintForm(false);
+      setComplaintForm({ subject: '', description: '' });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -224,6 +257,30 @@ const MyUnit = () => {
           </div>
         </div>
 
+        {/* Complaints */}
+        <div className="aero-glass rounded-lg overflow-hidden">
+          <div className="aero-toolbar px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-3.5 w-3.5 text-aero-warning" />
+              <span className="text-sm font-semibold text-foreground">My Complaints</span>
+            </div>
+            <button onClick={() => setShowComplaintForm(true)} className="flex items-center gap-1 text-[11px] text-primary font-medium hover:underline">
+              <Plus className="h-3 w-3" /> New Complaint
+            </button>
+          </div>
+          <div className="p-3">
+            {myComplaints?.length ? myComplaints.map((c: any) => (
+              <div key={c.id} className="py-2 border-b border-border/30 last:border-0">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-foreground">{c.subject}</p>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-medium capitalize ${statusColor[c.status] || 'bg-muted text-muted-foreground'}`}>{c.status.replace('_', ' ')}</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{c.description}</p>
+              </div>
+            )) : <p className="text-sm text-muted-foreground text-center py-4">No complaints</p>}
+          </div>
+        </div>
+
         {/* Notifications */}
         <div className="aero-glass rounded-lg overflow-hidden">
           <div className="aero-toolbar px-4 py-2 flex items-center gap-2">
@@ -276,6 +333,34 @@ const MyUnit = () => {
                 <button type="button" onClick={() => setShowMaintForm(false)} className="flex-1 aero-button rounded-md px-4 py-2 text-sm text-foreground">Cancel</button>
                 <button type="submit" disabled={submitMaint.isPending} className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50">
                   {submitMaint.isPending ? 'Submitting...' : 'Submit'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Complaint form modal */}
+      {showComplaintForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4">
+          <div className="aero-glass rounded-lg w-full max-w-md animate-aero-fade-in">
+            <div className="aero-title-bar rounded-t-lg px-4 py-3 flex items-center justify-between">
+              <span className="text-sm font-semibold text-sidebar-foreground">Submit Complaint</span>
+              <button onClick={() => setShowComplaintForm(false)}><X className="h-4 w-4 text-sidebar-foreground/70" /></button>
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); submitComplaint.mutate(); }} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Subject</label>
+                <input className="aero-input w-full rounded-md px-3 py-2 text-sm text-foreground focus:outline-none" value={complaintForm.subject} onChange={(e) => setComplaintForm({ ...complaintForm, subject: e.target.value })} placeholder="e.g. Noisy neighbors, water issue" required />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Description</label>
+                <textarea className="aero-input w-full rounded-md px-3 py-2 text-sm text-foreground focus:outline-none resize-none" rows={4} value={complaintForm.description} onChange={(e) => setComplaintForm({ ...complaintForm, description: e.target.value })} placeholder="Describe your complaint in detail..." required />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowComplaintForm(false)} className="flex-1 aero-button rounded-md px-4 py-2 text-sm text-foreground">Cancel</button>
+                <button type="submit" disabled={submitComplaint.isPending} className="flex-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50">
+                  {submitComplaint.isPending ? 'Submitting...' : 'Submit'}
                 </button>
               </div>
             </form>

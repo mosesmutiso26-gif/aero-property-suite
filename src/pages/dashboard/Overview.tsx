@@ -6,7 +6,7 @@ import { useState, useRef, useCallback } from 'react';
 import {
   Building2, Users, CreditCard, Wrench, TrendingUp, AlertTriangle,
   FileText, BarChart3, Settings, FolderClosed, ClipboardList, GripVertical,
-  Home, Bell
+  Home, Bell, MessageSquare, Send
 } from 'lucide-react';
 
 // ── Role-specific folder modules ──
@@ -14,9 +14,11 @@ const adminModules = [
   { label: 'Properties', path: '/dashboard/properties', icon: Building2, color: 'text-primary', description: 'Manage buildings' },
   { label: 'Units', path: '/dashboard/units', icon: ClipboardList, color: 'text-accent', description: 'Rooms & apartments' },
   { label: 'Tenants', path: '/dashboard/tenants', icon: Users, color: 'text-aero-success', description: 'Resident records' },
+  { label: 'Complaints', path: '/dashboard/complaints', icon: MessageSquare, color: 'text-aero-warning', description: 'Tenant complaints' },
   { label: 'Invoices', path: '/dashboard/invoices', icon: FileText, color: 'text-aero-warning', description: 'Billing documents' },
   { label: 'Payments', path: '/dashboard/payments', icon: CreditCard, color: 'text-primary', description: 'Payment records' },
   { label: 'Maintenance', path: '/dashboard/maintenance', icon: Wrench, color: 'text-destructive', description: 'Repair requests' },
+  { label: 'SMS Reminders', path: '/dashboard/sms', icon: Send, color: 'text-accent', description: 'Bulk SMS to tenants' },
   { label: 'Reports', path: '/dashboard/reports', icon: BarChart3, color: 'text-accent', description: 'Analytics & data' },
   { label: 'Users', path: '/dashboard/users', icon: Users, color: 'text-muted-foreground', description: 'User management' },
   { label: 'Settings', path: '/dashboard/settings', icon: Settings, color: 'text-muted-foreground', description: 'System config' },
@@ -25,18 +27,22 @@ const adminModules = [
 const landlordModules = [
   { label: 'Properties', path: '/dashboard/properties', icon: Building2, color: 'text-primary', description: 'Your buildings' },
   { label: 'Tenants', path: '/dashboard/tenants', icon: Users, color: 'text-aero-success', description: 'Resident records' },
+  { label: 'Complaints', path: '/dashboard/complaints', icon: MessageSquare, color: 'text-aero-warning', description: 'Tenant complaints' },
   { label: 'Reports', path: '/dashboard/reports', icon: BarChart3, color: 'text-accent', description: 'Revenue & analytics' },
   { label: 'Maintenance', path: '/dashboard/maintenance', icon: Wrench, color: 'text-destructive', description: 'Repair requests' },
+  { label: 'SMS Reminders', path: '/dashboard/sms', icon: Send, color: 'text-accent', description: 'Bulk SMS to tenants' },
 ];
 
 const caretakerModules = [
   { label: 'Properties', path: '/dashboard/properties', icon: Building2, color: 'text-primary', description: 'Assigned buildings' },
   { label: 'Tenants', path: '/dashboard/tenants', icon: Users, color: 'text-aero-success', description: 'Residents in your buildings' },
+  { label: 'Complaints', path: '/dashboard/complaints', icon: MessageSquare, color: 'text-aero-warning', description: 'Tenant complaints' },
   { label: 'Maintenance', path: '/dashboard/maintenance', icon: Wrench, color: 'text-destructive', description: 'Repair requests' },
 ];
 
 const tenantModules = [
   { label: 'My Unit', path: '/dashboard/my-unit', icon: Home, color: 'text-primary', description: 'Your home details' },
+  { label: 'Complaints', path: '/dashboard/complaints', icon: MessageSquare, color: 'text-aero-warning', description: 'File a complaint' },
   { label: 'Invoices', path: '/dashboard/invoices', icon: FileText, color: 'text-aero-warning', description: 'Your bills' },
   { label: 'Payments', path: '/dashboard/payments', icon: CreditCard, color: 'text-primary', description: 'Payment history' },
   { label: 'Maintenance', path: '/dashboard/maintenance', icon: Wrench, color: 'text-destructive', description: 'Request repairs' },

@@ -44,6 +44,64 @@ export type Database = {
         }
         Relationships: []
       }
+      complaints: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          property_id: string
+          status: string
+          subject: string
+          tenant_id: string
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          property_id: string
+          status?: string
+          subject: string
+          tenant_id: string
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          property_id?: string
+          status?: string
+          subject?: string
+          tenant_id?: string
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_complaints_property"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_complaints_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_complaints_unit"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           amount: number
@@ -460,6 +518,7 @@ export type Database = {
       }
       units: {
         Row: {
+          account_number: string | null
           bathrooms: number | null
           bedrooms: number | null
           created_at: string
@@ -473,6 +532,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_number?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
           created_at?: string
@@ -486,6 +546,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_number?: string | null
           bathrooms?: number | null
           bedrooms?: number | null
           created_at?: string

@@ -42,6 +42,7 @@ const roleNavItems: Record<string, NavItem[]> = {
     { label: 'Overview', path: '/dashboard', icon: <Home className="h-4 w-4" /> },
     { label: 'Properties', path: '/dashboard/properties', icon: <Building2 className="h-4 w-4" /> },
     { label: 'Tenants', path: '/dashboard/tenants', icon: <Users className="h-4 w-4" /> },
+    { label: 'Payments', path: '/dashboard/payments', icon: <CreditCard className="h-4 w-4" /> },
     { label: 'Complaints', path: '/dashboard/complaints', icon: <MessageSquare className="h-4 w-4" /> },
     { label: 'Maintenance', path: '/dashboard/maintenance', icon: <Wrench className="h-4 w-4" /> },
   ],

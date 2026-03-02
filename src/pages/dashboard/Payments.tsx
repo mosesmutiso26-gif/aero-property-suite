@@ -9,6 +9,7 @@ const Payments = () => {
   const { role } = useAuth();
   const qc = useQueryClient();
   const isSuperAdmin = role === 'super_admin';
+  const isCaretaker = role === 'caretaker';
   const isTenant = role === 'tenant';
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ tenant_id: '', invoice_id: '', amount: 0, payment_method: 'mpesa', reference_number: '' });

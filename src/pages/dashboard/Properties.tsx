@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Building2, Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Building2, Plus, Edit2, Trash2, X, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PropertyForm {
@@ -11,9 +11,11 @@ interface PropertyForm {
   city: string;
   description: string;
   total_units: number;
+  caretaker_id: string | null;
+  landlord_id: string | null;
 }
 
-const emptyForm: PropertyForm = { name: '', address: '', city: '', description: '', total_units: 0 };
+const emptyForm: PropertyForm = { name: '', address: '', city: '', description: '', total_units: 0, caretaker_id: null, landlord_id: null };
 
 const Properties = () => {
   const { role } = useAuth();
@@ -31,6 +33,43 @@ const Properties = () => {
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
+    },
+  });
+
+  // Fetch caretakers (users with caretaker role)
+  const { data: caretakers } = useQuery({
+    queryKey: ['caretakers-list'],
+    queryFn: async () => {
+      const { data: roles } = await supabase.from('user_roles').select('user_id').eq('role', 'caretaker');
+      if (!roles?.length) return [];
+      const userIds = roles.map(r => r.user_id);
+      const { data: profiles } = await supabase.from('profiles').select('*').in('user_id', userIds);
+      return profiles || [];
+    },
+    enabled: role === 'super_admin',
+  });
+
+  // Fetch landlords (users with landlord role)
+  const { data: landlords } = useQuery({
+    queryKey: ['landlords-list'],
+    queryFn: async () => {
+      const { data: roles } = await supabase.from('user_roles').select('user_id').eq('role', 'landlord');
+      if (!roles?.length) return [];
+      const userIds = roles.map(r => r.user_id);
+      const { data: profiles } = await supabase.from('profiles').select('*').in('user_id', userIds);
+      return profiles || [];
+    },
+    enabled: role === 'super_admin',
+  });
+
+  // Map user_ids to names for display
+  const { data: allProfiles } = useQuery({
+    queryKey: ['all-profiles-for-properties'],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('user_id, full_name');
+      const map: Record<string, string> = {};
+      data?.forEach(p => { map[p.user_id] = p.full_name || 'Unnamed'; });
+      return map;
     },
   });
 
@@ -73,6 +112,8 @@ const Properties = () => {
       city: property.city,
       description: property.description || '',
       total_units: property.total_units,
+      caretaker_id: property.caretaker_id || null,
+      landlord_id: property.landlord_id || null,
     });
     setEditId(property.id);
     setShowForm(true);
@@ -97,8 +138,8 @@ const Properties = () => {
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-4">
-          <div className="aero-glass rounded-lg w-full max-w-md animate-aero-fade-in">
-            <div className="aero-title-bar rounded-t-lg px-4 py-3 flex items-center justify-between">
+          <div className="aero-glass rounded-lg w-full max-w-md animate-aero-fade-in max-h-[90vh] overflow-y-auto">
+            <div className="aero-title-bar rounded-t-lg px-4 py-3 flex items-center justify-between sticky top-0">
               <span className="text-sm font-semibold text-sidebar-foreground">
                 {editId ? 'Edit Property' : 'New Property'}
               </span>
@@ -140,6 +181,45 @@ const Properties = () => {
                   min={0}
                 />
               </div>
+
+              {/* Assign Caretaker */}
+              {isSuperAdmin && (
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Assign Caretaker</label>
+                  <select
+                    className="aero-input w-full rounded-md px-3 py-2 text-sm text-foreground focus:outline-none"
+                    value={form.caretaker_id || ''}
+                    onChange={(e) => setForm({ ...form, caretaker_id: e.target.value || null })}
+                  >
+                    <option value="">— No Caretaker —</option>
+                    {caretakers?.map((c) => (
+                      <option key={c.user_id} value={c.user_id}>
+                        {c.full_name || c.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Assign Landlord */}
+              {isSuperAdmin && (
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Assign Landlord</label>
+                  <select
+                    className="aero-input w-full rounded-md px-3 py-2 text-sm text-foreground focus:outline-none"
+                    value={form.landlord_id || ''}
+                    onChange={(e) => setForm({ ...form, landlord_id: e.target.value || null })}
+                  >
+                    <option value="">— No Landlord —</option>
+                    {landlords?.map((l) => (
+                      <option key={l.user_id} value={l.user_id}>
+                        {l.full_name || l.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
@@ -204,6 +284,27 @@ const Properties = () => {
               {property.description && (
                 <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{property.description}</p>
               )}
+              {/* Show assigned caretaker & landlord */}
+              <div className="mt-3 pt-3 border-t border-border space-y-1">
+                <div className="flex items-center gap-1.5 text-xs">
+                  <UserCheck className="h-3.5 w-3.5 text-primary/70" />
+                  <span className="text-muted-foreground">Caretaker:</span>
+                  <span className="font-medium text-foreground">
+                    {property.caretaker_id && allProfiles?.[property.caretaker_id]
+                      ? allProfiles[property.caretaker_id]
+                      : 'Not assigned'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <UserCheck className="h-3.5 w-3.5 text-primary/70" />
+                  <span className="text-muted-foreground">Landlord:</span>
+                  <span className="font-medium text-foreground">
+                    {property.landlord_id && allProfiles?.[property.landlord_id]
+                      ? allProfiles[property.landlord_id]
+                      : 'Not assigned'}
+                  </span>
+                </div>
+              </div>
             </div>
           ))}
         </div>

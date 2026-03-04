@@ -127,7 +127,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
               }`}
             >
-              <FolderOpen className={`h-4 w-4 ${isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/50'}`} />
+              <FolderOpen className="h-4 w-4 text-aero-folder" />
               {item.label}
               {isActive && <ChevronRight className="h-3 w-3 ml-auto opacity-60" />}
             </Link>

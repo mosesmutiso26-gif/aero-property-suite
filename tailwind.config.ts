@@ -69,6 +69,7 @@ export default {
           success: "hsl(var(--aero-success))",
           warning: "hsl(var(--aero-warning))",
           highlight: "hsl(var(--aero-highlight))",
+          folder: "hsl(var(--aero-folder))",
         },
       },
       borderRadius: {

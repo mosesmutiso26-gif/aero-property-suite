@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN id_number text DEFAULT '';

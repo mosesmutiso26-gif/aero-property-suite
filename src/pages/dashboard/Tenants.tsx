@@ -13,7 +13,7 @@ const Tenants = () => {
   const canAddTenant = isSuperAdmin || isCaretaker;
   const [showForm, setShowForm] = useState(false);
   const [showLedger, setShowLedger] = useState<string | null>(null);
-  const [form, setForm] = useState({ email: '', full_name: '', phone: '', property_id: '', unit_id: '', move_in_date: '' });
+  const [form, setForm] = useState({ full_name: '', phone: '', id_number: '', property_id: '', unit_id: '', move_in_date: '' });
 
   // Properties the user can manage
   const { data: properties } = useQuery({
@@ -78,22 +78,28 @@ const Tenants = () => {
 
   const addTenantMutation = useMutation({
     mutationFn: async () => {
-      // 1. Sign up user via edge function or create profile
-      // For now, create a profile and tenant record manually
-      // Check if user with this email exists in profiles
-      const { data: existingProfile } = await supabase.from('profiles').select('user_id').eq('email', form.email).maybeSingle();
-      
+      // Look up existing profile by phone number
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('phone', form.phone)
+        .maybeSingle();
+
       let userId: string;
       if (existingProfile) {
         userId = existingProfile.user_id;
+        // Update profile with latest info
+        await supabase.from('profiles').update({
+          full_name: form.full_name,
+          id_number: form.id_number,
+        }).eq('user_id', userId);
       } else {
-        throw new Error('User must first sign up with this email. Ask them to register, then assign them here.');
+        throw new Error('No registered user found with this phone number. Ask the tenant to sign up first, then assign them here.');
       }
 
       // Check if already a tenant
       const { data: existingTenant } = await supabase.from('tenants').select('id').eq('user_id', userId).eq('is_active', true).maybeSingle();
       if (existingTenant) {
-        // Update existing tenant with property/unit
         const { error } = await supabase.from('tenants').update({
           property_id: form.property_id,
           unit_id: form.unit_id || null,
@@ -111,7 +117,6 @@ const Tenants = () => {
         if (error) throw error;
       }
 
-      // Mark unit as occupied
       if (form.unit_id) {
         await supabase.from('units').update({ is_occupied: true }).eq('id', form.unit_id);
       }
@@ -120,7 +125,7 @@ const Tenants = () => {
       qc.invalidateQueries({ queryKey: ['tenants'] });
       toast.success('Tenant assigned successfully');
       setShowForm(false);
-      setForm({ email: '', full_name: '', phone: '', property_id: '', unit_id: '', move_in_date: '' });
+      setForm({ full_name: '', phone: '', id_number: '', property_id: '', unit_id: '', move_in_date: '' });
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -148,8 +153,16 @@ const Tenants = () => {
             </div>
             <form onSubmit={(e) => { e.preventDefault(); addTenantMutation.mutate(); }} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">Tenant Email (must be registered)</label>
-                <input className="aero-input w-full rounded-md px-3 py-2 text-sm text-foreground focus:outline-none" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required placeholder="tenant@example.com" />
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Full Name</label>
+                <input className="aero-input w-full rounded-md px-3 py-2 text-sm text-foreground focus:outline-none" type="text" value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} required placeholder="John Doe" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Phone Number</label>
+                <input className="aero-input w-full rounded-md px-3 py-2 text-sm text-foreground focus:outline-none" type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} required placeholder="0712345678" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">ID Number</label>
+                <input className="aero-input w-full rounded-md px-3 py-2 text-sm text-foreground focus:outline-none" type="text" value={form.id_number} onChange={e => setForm({ ...form, id_number: e.target.value })} required placeholder="12345678" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Property</label>
@@ -293,8 +306,9 @@ const Tenants = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Name</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Email</th>
+                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Name</th>
+                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Phone</th>
+                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">ID No.</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Unit</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Property</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">Rent</th>
@@ -306,8 +320,9 @@ const Tenants = () => {
               <tbody>
                 {tenants.map((t: any) => (
                   <tr key={t.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3 font-medium text-foreground">{t.profile?.full_name || 'Unnamed'}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{t.profile?.email}</td>
+                     <td className="px-4 py-3 font-medium text-foreground">{t.profile?.full_name || 'Unnamed'}</td>
+                     <td className="px-4 py-3 text-muted-foreground">{t.profile?.phone || '-'}</td>
+                     <td className="px-4 py-3 text-muted-foreground">{(t.profile as any)?.id_number || '-'}</td>
                     <td className="px-4 py-3 text-muted-foreground">{t.units?.unit_number || '-'}</td>
                     <td className="px-4 py-3 text-muted-foreground">{t.properties?.name || '-'}</td>
                     <td className="px-4 py-3 text-foreground font-medium">

@@ -44,6 +44,36 @@ export type Database = {
         }
         Relationships: []
       }
+      chats: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          recipient_id: string | null
+          room_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          recipient_id?: string | null
+          room_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          recipient_id?: string | null
+          room_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       complaints: {
         Row: {
           created_at: string

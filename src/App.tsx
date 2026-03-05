@@ -32,9 +32,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <InstallPrompt />
-      <ChatWidget />
       <BrowserRouter>
         <AuthProvider>
+          <ChatWidget />
           <Routes>
             <Route path="/" element={<Navigate to="/auth" replace />} />
             <Route path="/auth" element={<Auth />} />

@@ -46,21 +46,35 @@ const SMSBulk = () => {
 
     setSending(true);
     try {
-      // Create in-app notifications for each recipient
+      // Send actual SMS via edge function
+      const { data: smsResult, error: smsError } = await supabase.functions.invoke('send-bulk-sms', {
+        body: {
+          message: message.trim(),
+          recipients: recipients.map(r => ({ phone: r.phone, name: r.name })),
+        },
+      });
+
+      if (smsError) throw smsError;
+
+      // Also create in-app notifications
       const notifications = recipients.map(r => ({
         user_id: r.user_id,
         title: 'SMS Reminder',
         message: message,
         type: 'reminder',
       }));
-      const { error } = await supabase.from('notifications').insert(notifications);
-      if (error) throw error;
+      await supabase.from('notifications').insert(notifications);
 
-      toast.success(`Reminder sent to ${recipients.length} tenant(s). SMS delivery requires Daraja API integration.`);
+      if (smsResult?.sent > 0) {
+        toast.success(`SMS sent to ${smsResult.sent} tenant(s)${smsResult.failed > 0 ? `, ${smsResult.failed} failed` : ''}`);
+      } else {
+        toast.warning(`SMS delivery failed. In-app notifications were sent to ${recipients.length} tenant(s).`);
+      }
+      
       setMessage('');
       setSelectedTenants([]);
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || 'Failed to send SMS');
     } finally {
       setSending(false);
     }
@@ -143,16 +157,15 @@ const SMSBulk = () => {
             className="flex items-center gap-2 rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             <Send className="h-4 w-4" />
-            {sending ? 'Sending...' : 'Send Reminder'}
+            {sending ? 'Sending...' : 'Send SMS'}
           </button>
         </div>
       </div>
 
       <div className="aero-glass rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-foreground mb-2">📱 Daraja SMS Integration</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-2">📱 SMS Integration Active</h3>
         <p className="text-xs text-muted-foreground">
-          To enable actual SMS delivery, the Safaricom Daraja API will be integrated. Currently, reminders are sent as in-app notifications.
-          Once Daraja is connected, tenants will receive SMS messages directly to their registered phone numbers.
+          Bulk SMS is connected and functional. Messages will be sent directly to tenants' registered phone numbers. In-app notifications are also created as backup.
         </p>
       </div>
     </div>

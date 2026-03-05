@@ -22,6 +22,7 @@ import MyUnit from "./pages/dashboard/MyUnit";
 import Profile from "./pages/dashboard/Profile";
 import NotFound from "./pages/NotFound";
 import InstallPrompt from "./components/InstallPrompt";
+import ChatWidget from "./components/ChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <InstallPrompt />
+      <ChatWidget />
       <BrowserRouter>
         <AuthProvider>
           <Routes>
